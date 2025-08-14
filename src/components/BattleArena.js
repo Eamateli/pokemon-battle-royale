@@ -143,110 +143,220 @@ function BattleArena() {
   const winnerInfo = getWinnerInfo();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-400 via-purple-500 to-pink-500">
-      {/* Header */}
-      <header className="text-center py-8">
-        <h1 className="text-5xl md:text-6xl font-bold text-white mb-4 drop-shadow-lg">
-          ⚡ Pokémon Battle Royale ⚡
-        </h1>
-        <p className="text-white/90 text-xl mb-6">
-          Choose your champion and watch the votes roll in!
-        </p>
-        
-        {/* Connection Status & Stats */}
-        <div className="flex justify-center items-center gap-6 mb-4">
-          <ConnectionStatus status={connectionStatus} />
-          <div className="flex items-center gap-2 text-white/80">
-            <Users className="w-5 h-5" />
-            <span className="font-medium">{totalVotes.toLocaleString()} total votes</span>
+    <div className="min-h-screen relative overflow-hidden" style={{
+      background: 'linear-gradient(135deg, #e91e63 0%, #ad1457 50%, #880e4f 100%)'
+    }}>
+      {/* Floating Pokéballs Background */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        {/* Large Pokéballs */}
+        <div className="pokeball-large absolute top-10 left-10 opacity-10">
+          <div className="w-32 h-32 bg-white rounded-full relative border-4 border-gray-800">
+            <div className="absolute top-0 left-0 w-full h-1/2 bg-red-500 rounded-t-full"></div>
+            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-8 h-8 bg-white rounded-full border-4 border-gray-800"></div>
+            <div className="absolute top-1/2 left-0 w-full h-1 bg-gray-800"></div>
           </div>
         </div>
 
-        {/* New Battle Button */}
-        <button
-          onClick={handleNewBattle}
-          disabled={loading}
-          className="bg-white/20 hover:bg-white/30 text-white font-bold py-2 px-6 rounded-full transition-colors duration-200 flex items-center gap-2 mx-auto disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          <RotateCcw className="w-4 h-4" />
-          New Random Battle
-        </button>
-      </header>
-
-      <div className="container mx-auto px-4 pb-8">
-        {/* Battle Arena */}
-        <div className="grid md:grid-cols-2 gap-8 max-w-6xl mx-auto mb-12">
-          {pokemon1 && (
-            <PokemonCard
-              pokemon={pokemon1}
-              position="pokemon1"
-              onVote={handleVote}
-              userVoted={userVoted}
-              votes={votes.pokemon1}
-              totalVotes={totalVotes}
-            />
-          )}
-          
-          {pokemon2 && (
-            <PokemonCard
-              pokemon={pokemon2}
-              position="pokemon2"
-              onVote={handleVote}
-              userVoted={userVoted}
-              votes={votes.pokemon2}
-              totalVotes={totalVotes}
-            />
-          )}
+        <div className="pokeball-large absolute top-20 right-20 opacity-10">
+          <div className="w-24 h-24 bg-white rounded-full relative border-3 border-gray-700">
+            <div className="absolute top-0 left-0 w-full h-1/2 bg-red-500 rounded-t-full"></div>
+            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-6 h-6 bg-white rounded-full border-3 border-gray-700"></div>
+            <div className="absolute top-1/2 left-0 w-full h-0.5 bg-gray-700"></div>
+          </div>
         </div>
 
-        {/* Results Section */}
-        {userVoted && totalVotes > 0 && (
-          <section className="max-w-4xl mx-auto">
-            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 text-center">
-              <h2 className="text-2xl font-bold text-white mb-4">
-                🏆 Battle Results
-              </h2>
-              
-              {winnerInfo?.winner && winnerInfo.winner !== 'tie' && (
-                <div className="text-center">
-                  <p className="text-white font-bold text-xl mb-2">
-                    🎉 {winnerInfo.name?.charAt(0).toUpperCase() + winnerInfo.name?.slice(1)} wins! 🎉
-                  </p>
-                  <p className="text-white/80">
-                    With {winnerInfo.winner === 'pokemon1' ? votes.pokemon1 : votes.pokemon2} votes 
-                    ({Math.round(((winnerInfo.winner === 'pokemon1' ? votes.pokemon1 : votes.pokemon2) / totalVotes) * 100)}% of total votes)
-                  </p>
-                </div>
-              )}
-
-              {winnerInfo?.winner === 'tie' && (
-                <div className="text-center pt-4 border-t border-white/20">
-                  <p className="text-white font-bold text-lg">
-                    🤝 It's a tie! Both Pokémon are equally matched!
-                  </p>
-                </div>
-              )}
-
-              {winnerInfo?.winner === null && (
-                <div className="text-center pt-4 border-t border-white/20">
-                  <p className="text-white font-bold text-lg">
-                    🤝 It's a tie! Both Pokémon are equally matched!
-                  </p>
-                </div>
-              )}
-            </div>
-          </section>
-        )}
-
-        {/* Call to Action */}
-        {!userVoted && (
-          <div className="text-center mt-8">
-            <p className="text-white/80 text-lg">
-              Cast your vote to see real-time results! 🗳️
-            </p>
+        <div className="pokeball-large absolute bottom-20 left-20 opacity-15">
+          <div className="w-20 h-20 bg-white rounded-full relative border-2 border-gray-600">
+            <div className="absolute top-0 left-0 w-full h-1/2 bg-red-500 rounded-t-full"></div>
+            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-5 h-5 bg-white rounded-full border-2 border-gray-600"></div>
+            <div className="absolute top-1/2 left-0 w-full h-0.5 bg-gray-600"></div>
           </div>
-        )}
+        </div>
+
+        <div className="pokeball-large absolute bottom-32 right-32 opacity-10">
+          <div className="w-28 h-28 bg-white rounded-full relative border-3 border-gray-700">
+            <div className="absolute top-0 left-0 w-full h-1/2 bg-red-500 rounded-t-full"></div>
+            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-7 h-7 bg-white rounded-full border-3 border-gray-700"></div>
+            <div className="absolute top-1/2 left-0 w-full h-0.5 bg-gray-700"></div>
+          </div>
+        </div>
+
+        {/* Small floating Pokéballs */}
+        <div className="pokeball-small absolute top-40 left-1/3 opacity-20">
+          <div className="w-12 h-12 bg-white rounded-full relative border-2 border-gray-600">
+            <div className="absolute top-0 left-0 w-full h-1/2 bg-red-500 rounded-t-full"></div>
+            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-3 h-3 bg-white rounded-full border-2 border-gray-600"></div>
+            <div className="absolute top-1/2 left-0 w-full h-0.5 bg-gray-600"></div>
+          </div>
+        </div>
+
+        <div className="pokeball-small absolute top-60 right-1/4 opacity-15">
+          <div className="w-16 h-16 bg-white rounded-full relative border-2 border-gray-600">
+            <div className="absolute top-0 left-0 w-full h-1/2 bg-red-500 rounded-t-full"></div>
+            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-4 h-4 bg-white rounded-full border-2 border-gray-600"></div>
+            <div className="absolute top-1/2 left-0 w-full h-0.5 bg-gray-600"></div>
+          </div>
+        </div>
       </div>
+
+      {/* Main Content */}
+      <div className="relative z-10">
+        {/* Header */}
+        <header className="text-center py-8">
+          <div className="flex items-center justify-center gap-4 mb-4">
+            {/* Left Pokéball */}
+            <div className="w-12 h-12 md:w-16 md:h-16 bg-white rounded-full relative border-2 md:border-3 border-gray-800 shadow-lg">
+              <div className="absolute top-0 left-0 w-full h-1/2 bg-red-500 rounded-t-full"></div>
+              <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-3 h-3 md:w-4 md:h-4 bg-white rounded-full border-2 border-gray-800"></div>
+              <div className="absolute top-1/2 left-0 w-full h-0.5 bg-gray-800"></div>
+            </div>
+            
+            <h1 className="text-5xl md:text-6xl font-bold text-white drop-shadow-lg">
+              Pokémon Battle Royale
+            </h1>
+            
+            {/* Right Pokéball */}
+            <div className="w-12 h-12 md:w-16 md:h-16 bg-white rounded-full relative border-2 md:border-3 border-gray-800 shadow-lg">
+              <div className="absolute top-0 left-0 w-full h-1/2 bg-red-500 rounded-t-full"></div>
+              <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-3 h-3 md:w-4 md:h-4 bg-white rounded-full border-2 border-gray-800"></div>
+              <div className="absolute top-1/2 left-0 w-full h-0.5 bg-gray-800"></div>
+            </div>
+          </div>
+          <p className="text-white/90 text-xl mb-6">
+            Choose your champion and watch the votes roll in!
+          </p>
+          
+          {/* Connection Status & Stats */}
+          <div className="flex justify-center items-center gap-6 mb-4">
+            <ConnectionStatus status={connectionStatus} />
+            <div className="flex items-center gap-2 text-white/80">
+              <Users className="w-5 h-5" />
+              <span className="font-medium">{totalVotes.toLocaleString()} total votes</span>
+            </div>
+          </div>
+
+          {/* New Battle Button */}
+          <button
+            onClick={handleNewBattle}
+            disabled={loading}
+            className="bg-white/20 hover:bg-white/30 text-white font-bold py-2 px-6 rounded-full transition-colors duration-200 flex items-center gap-2 mx-auto disabled:opacity-50 disabled:cursor-not-allowed backdrop-blur-sm"
+          >
+            <RotateCcw className="w-4 h-4" />
+            New Random Battle
+          </button>
+        </header>
+
+        <div className="container mx-auto px-4 pb-8">
+          {/* Battle Arena */}
+          <div className="grid md:grid-cols-2 gap-8 max-w-6xl mx-auto mb-12">
+            {pokemon1 && (
+              <PokemonCard
+                pokemon={pokemon1}
+                position="pokemon1"
+                onVote={handleVote}
+                userVoted={userVoted}
+                votes={votes.pokemon1}
+                totalVotes={totalVotes}
+              />
+            )}
+            
+            {pokemon2 && (
+              <PokemonCard
+                pokemon={pokemon2}
+                position="pokemon2"
+                onVote={handleVote}
+                userVoted={userVoted}
+                votes={votes.pokemon2}
+                totalVotes={totalVotes}
+              />
+            )}
+          </div>
+
+          {/* Results Section */}
+          {userVoted && totalVotes > 0 && (
+            <section className="max-w-4xl mx-auto">
+              <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 text-center border border-white/20">
+                <h2 className="text-2xl font-bold text-white mb-4">
+                  🏆 Battle Results
+                </h2>
+                
+                {winnerInfo?.winner && winnerInfo.winner !== 'tie' && (
+                  <div className="text-center">
+                    <p className="text-white font-bold text-xl mb-2">
+                      🎉 {winnerInfo.name?.charAt(0).toUpperCase() + winnerInfo.name?.slice(1)} wins! 🎉
+                    </p>
+                    <p className="text-white/80">
+                      With {winnerInfo.winner === 'pokemon1' ? votes.pokemon1 : votes.pokemon2} votes 
+                      ({Math.round(((winnerInfo.winner === 'pokemon1' ? votes.pokemon1 : votes.pokemon2) / totalVotes) * 100)}% of total votes)
+                    </p>
+                  </div>
+                )}
+
+                {winnerInfo?.winner === 'tie' && (
+                  <div className="text-center pt-4 border-t border-white/20">
+                    <p className="text-white font-bold text-lg">
+                      🤝 It's a tie! Both Pokémon are equally matched!
+                    </p>
+                  </div>
+                )}
+
+                {winnerInfo?.winner === null && (
+                  <div className="text-center pt-4 border-t border-white/20">
+                    <p className="text-white font-bold text-lg">
+                      🤝 It's a tie! Both Pokémon are equally matched!
+                    </p>
+                  </div>
+                )}
+              </div>
+            </section>
+          )}
+
+          {/* Call to Action */}
+          {!userVoted && (
+            <div className="text-center mt-8">
+              <p className="text-white/80 text-lg drop-shadow">
+                Cast your vote to see real-time results! 🗳️
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Custom CSS for animations */}
+      <style jsx>{`
+        .pokeball-large {
+          animation: float 6s ease-in-out infinite;
+        }
+        
+        .pokeball-small {
+          animation: float 4s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+          0%, 100% {
+            transform: translateY(0px) rotate(0deg);
+          }
+          50% {
+            transform: translateY(-20px) rotate(180deg);
+          }
+        }
+        
+        .pokeball-large:nth-child(2) {
+          animation-delay: -2s;
+        }
+        
+        .pokeball-large:nth-child(3) {
+          animation-delay: -4s;
+        }
+        
+        .pokeball-small:nth-child(1) {
+          animation-delay: -1s;
+        }
+        
+        .pokeball-small:nth-child(2) {
+          animation-delay: -3s;
+        }
+      `}</style>
     </div>
   );
 }
