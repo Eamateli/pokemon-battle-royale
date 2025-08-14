@@ -17,7 +17,7 @@ import { battleHelpers } from '../hooks/useBattle';
 function PokemonCard({ pokemon, position, onVote, userVoted, votes, totalVotes }) {
   // Calculate display values
   const percentage = battleHelpers.calculatePercentage(votes, totalVotes);
-  const isWinner = battleHelpers.isWinner(votes, totalVotes);
+  const isWinner = totalVotes > 0 && votes > 0 && votes >= (totalVotes - votes);
   const canVote = !userVoted;
   const formattedStats = battleHelpers.formatStats(pokemon);
 
@@ -61,65 +61,64 @@ function PokemonCard({ pokemon, position, onVote, userVoted, votes, totalVotes }
   };
 
   return (
-    <div className={`relative bg-white rounded-2xl shadow-lg overflow-hidden transition-all duration-300 ${
-      isWinner ? 'ring-4 ring-yellow-400 shadow-yellow-200' : ''
-    } ${canVote ? 'hover:shadow-xl hover:scale-105' : ''}`}>
+    <div className={`relative bg-white rounded-2xl shadow-lg overflow-hidden transition-all duration-300 pokemon-card ${
+      isWinner ? 'ring-4 ring-yellow-400 shadow-yellow-200 winner-glow' : ''
+    } ${canVote ? 'hover:shadow-xl cursor-pointer' : ''}`}>
       
-      {/* Winner Crown */}
-      {isWinner && (
-        <div className="absolute top-4 right-4 z-10">
-          <Trophy className="w-8 h-8 text-yellow-500" />
+      {/* Winner Badge */}
+      {isWinner && totalVotes > 0 && (
+        <div className="absolute top-3 right-3 z-10 bg-yellow-400 text-yellow-900 px-2 py-1 rounded-full text-xs font-bold flex items-center gap-1">
+          <Trophy className="w-3 h-3" />
+          Winner!
         </div>
       )}
 
       <div className="p-6">
-        {/* Pokemon Image and Name */}
+        {/* Pokemon Image */}
         <div className="text-center mb-4">
-          <div className="relative">
-            <img 
-              src={pokemon.sprite} 
-              alt={`${pokemon.name} sprite`}
-              className="w-32 h-32 mx-auto object-contain"
-              onError={handleImageError}
-              loading="lazy"
-            />
-            {isWinner && (
-              <div className="absolute -top-2 -right-2 w-6 h-6 bg-yellow-400 rounded-full flex items-center justify-center">
-                <span className="text-xs">👑</span>
-              </div>
-            )}
-          </div>
-          
-          <h3 className="text-2xl font-bold text-gray-800 capitalize mt-4">
+          <img 
+            src={pokemon.sprites?.other?.['official-artwork']?.front_default || 
+                 pokemon.sprites?.front_default || 
+                 `https://via.placeholder.com/128x128/3B82F6/FFFFFF?text=${pokemon.name.charAt(0).toUpperCase()}`}
+            alt={pokemon.name}
+            className="w-32 h-32 mx-auto object-contain bounce-in"
+            onError={handleImageError}
+            loading="lazy"
+          />
+        </div>
+
+        {/* Pokemon Info */}
+        <div className="space-y-3 mb-6">
+          <h3 className="text-2xl font-bold text-gray-800 text-center capitalize">
             {pokemon.name}
           </h3>
           
-          {/* Type Badges */}
-          <div className="flex justify-center gap-2 mt-2 flex-wrap">
-            {pokemon.types.map(type => (
+          {/* Types */}
+          <div className="flex justify-center gap-2 flex-wrap">
+            {pokemon.types?.map((typeInfo, index) => (
               <span 
-                key={type} 
-                className={`px-2 py-1 rounded-full text-xs font-medium capitalize ${getTypeColor(type)}`}
+                key={index}
+                className={`px-3 py-1 rounded-full text-xs font-medium capitalize ${getTypeColor(typeInfo.type.name)}`}
               >
-                {type}
+                {typeInfo.type.name}
               </span>
             ))}
           </div>
-        </div>
 
-        {/* Pokemon Stats */}
-        <div className="space-y-3 mb-6">
-          <div className="flex justify-between text-sm">
-            <span className="text-gray-600">Weight:</span>
-            <span className="font-semibold">{formattedStats.weight}</span>
-          </div>
-          <div className="flex justify-between text-sm">
-            <span className="text-gray-600">Height:</span>
-            <span className="font-semibold">{formattedStats.height}</span>
-          </div>
-          <div className="flex justify-between text-sm">
-            <span className="text-gray-600">Base Experience:</span>
-            <span className="font-semibold">{formattedStats.baseExperience}</span>
+          {/* Stats */}
+          <div className="grid grid-cols-3 gap-3 text-center">
+            <div className="bg-gray-50 rounded-lg p-2">
+              <div className="text-lg font-bold text-gray-800">{formattedStats.weight}</div>
+              <div className="text-xs text-gray-600">Weight</div>
+            </div>
+            <div className="bg-gray-50 rounded-lg p-2">
+              <div className="text-lg font-bold text-gray-800">{formattedStats.height}</div>
+              <div className="text-xs text-gray-600">Height</div>
+            </div>
+            <div className="bg-gray-50 rounded-lg p-2">
+              <div className="text-lg font-bold text-gray-800">{pokemon.base_experience}</div>
+              <div className="text-xs text-gray-600">Base EXP</div>
+            </div>
           </div>
         </div>
 
@@ -137,7 +136,7 @@ function PokemonCard({ pokemon, position, onVote, userVoted, votes, totalVotes }
             {/* Progress Bar */}
             <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
               <div 
-                className="bg-blue-500 h-3 rounded-full transition-all duration-500 ease-out"
+                className="bg-blue-500 h-3 rounded-full transition-all duration-500 ease-out progress-bar"
                 style={{ width: `${percentage}%` }}
                 role="progressbar"
                 aria-valuenow={percentage}
@@ -159,7 +158,7 @@ function PokemonCard({ pokemon, position, onVote, userVoted, votes, totalVotes }
           // Show Vote Button
           <button
             onClick={() => onVote(position)}
-            className="w-full bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 text-white font-bold py-3 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2"
+            className="w-full bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 text-white font-bold py-3 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2 vote-button"
             disabled={!canVote}
             aria-label={`Vote for ${pokemon.name}`}
           >
