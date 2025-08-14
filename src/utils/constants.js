@@ -6,7 +6,11 @@ export const ACTIONS = {
   SET_VOTES: 'SET_VOTES',
   SET_USER_VOTED: 'SET_USER_VOTED',
   SET_CONNECTION_STATUS: 'SET_CONNECTION_STATUS',
-  RESET_BATTLE: 'RESET_BATTLE'
+  RESET_BATTLE: 'RESET_BATTLE',
+  // NEW: Added for enhanced voting features
+  LOCK_VOTING: 'LOCK_VOTING',
+  SET_BANNER_DISMISSED: 'SET_BANNER_DISMISSED',
+  SET_BATTLE_ID: 'SET_BATTLE_ID'
 };
 
 // Initial state for the battle reducer
@@ -18,7 +22,11 @@ export const initialState = {
   votes: { pokemon1: 0, pokemon2: 0 },
   userVoted: null,
   connectionStatus: 'disconnected',
-  totalVotes: 0
+  totalVotes: 0,
+  // NEW: Added for enhanced voting features
+  votingLocked: false,
+  bannerDismissed: false,
+  battleId: null
 };
 
 // API endpoints and configuration

@@ -35,11 +35,25 @@ function battleReducer(state, action) {
     case ACTIONS.SET_CONNECTION_STATUS:
       return { ...state, connectionStatus: action.payload };
     
+    // NEW: Added for enhanced voting features
+    case ACTIONS.LOCK_VOTING:
+      return { ...state, votingLocked: true };
+    
+    case ACTIONS.SET_BANNER_DISMISSED:
+      return { ...state, bannerDismissed: action.payload };
+    
+    case ACTIONS.SET_BATTLE_ID:
+      return { ...state, battleId: action.payload };
+    
     case ACTIONS.RESET_BATTLE:
       return {
         ...initialState,
         loading: true,
-        connectionStatus: state.connectionStatus
+        connectionStatus: state.connectionStatus,
+        // NEW: Reset voting state
+        votingLocked: false,
+        bannerDismissed: false,
+        battleId: null
       };
     
     default:
@@ -48,10 +62,12 @@ function battleReducer(state, action) {
 }
 
 /**
- * Mock WebSocket implementation
+ * Enhanced Mock WebSocket implementation with vote locking
  * In production, this would be a real WebSocket connection
  */
 function createMockWebSocket(dispatch) {
+  let voteTimeout = null;
+  
   return {
     send: (data) => {
       // Simulate network delay
@@ -75,12 +91,20 @@ function createMockWebSocket(dispatch) {
             dispatch({ type: ACTIONS.SET_VOTES, payload: newVotes });
           }, 3000);
 
-          // Stop the simulation after 15 seconds
-          setTimeout(() => clearInterval(interval), 15000);
+          // NEW: Lock voting after 10 seconds and stop updates
+          voteTimeout = setTimeout(() => {
+            clearInterval(interval);
+            dispatch({ type: ACTIONS.LOCK_VOTING });
+            console.log('Voting locked after 10 seconds');
+          }, 10000);
         }
       }, 500);
     },
     close: () => {
+      // NEW: Clear timeout on close
+      if (voteTimeout) {
+        clearTimeout(voteTimeout);
+      }
       console.log('WebSocket connection closed');
     },
     readyState: 1 // WebSocket.OPEN
