@@ -98,3 +98,244 @@
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.5);
 }
+
+/* ADD THESE STYLES TO THE END OF YOUR EXISTING src/App.css FILE */
+/* Do not replace anything, just add these at the bottom */
+
+/* Retro text styling */
+.retro-text {
+  font-family: 'Courier New', 'Monaco', 'Menlo', monospace;
+  font-weight: bold;
+  text-rendering: optimizeSpeed;
+  -webkit-font-smoothing: none;
+  -moz-osx-font-smoothing: unset;
+  letter-spacing: 1px;
+}
+
+/* Pixelated image rendering */
+.pixel-image {
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+  image-rendering: -webkit-optimize-contrast;
+  -ms-interpolation-mode: nearest-neighbor;
+}
+
+/* Retro card styling */
+.pokemon-card-retro {
+  box-shadow: 
+    4px 4px 0px rgba(0,0,0,0.5),
+    8px 8px 0px rgba(0,0,0,0.3);
+  transition: all 0.2s ease;
+  min-height: 400px;
+  font-family: 'Courier New', monospace;
+}
+
+.pokemon-card-retro:hover {
+  transform: translateY(-2px);
+  box-shadow: 
+    6px 6px 0px rgba(0,0,0,0.5),
+    12px 12px 0px rgba(0,0,0,0.3);
+}
+
+/* Game Boy-style button effects */
+.retro-button {
+  position: relative;
+  transition: all 0.1s ease;
+  border-radius: 4px;
+  box-shadow: inset 2px 2px 4px rgba(255,255,255,0.3), inset -2px -2px 4px rgba(0,0,0,0.3);
+}
+
+.retro-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 
+    inset 3px 3px 6px rgba(255,255,255,0.4), 
+    inset -3px -3px 6px rgba(0,0,0,0.4),
+    0 4px 8px rgba(0,0,0,0.3);
+}
+
+.retro-button:active {
+  transform: translateY(1px);
+  box-shadow: 
+    inset 1px 1px 2px rgba(255,255,255,0.2), 
+    inset -1px -1px 2px rgba(0,0,0,0.5);
+}
+
+/* ADD THESE STYLES TO THE END OF YOUR EXISTING src/App.css FILE */
+/* Do not replace anything, just add these at the bottom */
+
+/* Retro text styling */
+.retro-text {
+  font-family: 'Courier New', 'Monaco', 'Menlo', monospace;
+  font-weight: bold;
+  text-rendering: optimizeSpeed;
+  -webkit-font-smoothing: none;
+  -moz-osx-font-smoothing: unset;
+  letter-spacing: 1px;
+}
+
+/* Pixelated image rendering */
+.pixel-image {
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+  image-rendering: -webkit-optimize-contrast;
+  -ms-interpolation-mode: nearest-neighbor;
+}
+
+/* Retro card styling */
+.pokemon-card-retro {
+  box-shadow: 
+    4px 4px 0px rgba(0,0,0,0.5),
+    8px 8px 0px rgba(0,0,0,0.3);
+  transition: all 0.2s ease;
+  min-height: 400px;
+  font-family: 'Courier New', monospace;
+}
+
+.pokemon-card-retro:hover {
+  transform: translateY(-2px);
+  box-shadow: 
+    6px 6px 0px rgba(0,0,0,0.5),
+    12px 12px 0px rgba(0,0,0,0.3);
+}
+
+/* Game Boy-style button effects */
+.retro-button {
+  position: relative;
+  transition: all 0.1s ease;
+  border-radius: 4px;
+  box-shadow: inset 2px 2px 4px rgba(255,255,255,0.3), inset -2px -2px 4px rgba(0,0,0,0.3);
+}
+
+.retro-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 
+    inset 3px 3px 6px rgba(255,255,255,0.4), 
+    inset -3px -3px 6px rgba(0,0,0,0.4),
+    0 4px 8px rgba(0,0,0,0.3);
+}
+
+.retro-button:active {
+  transform: translateY(1px);
+  box-shadow: 
+    inset 1px 1px 2px rgba(255,255,255,0.2), 
+    inset -1px -1px 2px rgba(0,0,0,0.5);
+}
+
+/* Pokemon Breathing Animation */
+@keyframes pokemon-breathe {
+  0%, 100% {
+    transform: scale(1) translateY(0px);
+  }
+  50% {
+    transform: scale(1.02) translateY(-2px);
+  }
+}
+
+.pokemon-breathing {
+  animation: pokemon-breathe 3s ease-in-out infinite;
+}
+
+/* Pokemon Blinking Effect */
+@keyframes pokemon-blink {
+  0%, 85%, 100% {
+    opacity: 0;
+  }
+  88%, 92% {
+    opacity: 0.1;
+    background: radial-gradient(circle at 35% 30%, rgba(0,0,0,0.3) 8%, transparent 8%),
+                radial-gradient(circle at 65% 30%, rgba(0,0,0,0.3) 8%, transparent 8%);
+  }
+}
+
+.pokemon-blink {
+  animation: pokemon-blink 4s ease-in-out infinite;
+  animation-delay: 1s;
+}
+
+/* Enhanced scan lines for more retro feel */
+@keyframes scan-lines {
+  0% {
+    transform: translateY(-100%);
+  }
+  100% {
+    transform: translateY(100vh);
+  }
+}
+/* ADD THESE STYLES TO YOUR src/App.css FILE */
+
+/* Pokémon Logo 3D Effect */
+.pokemon-logo {
+  font-family: 'Arial Black', 'Helvetica', sans-serif;
+  font-weight: 900;
+  color: #FFDE00; /* Pokémon Yellow */
+  text-shadow: 
+    /* Blue outline/border */
+    -4px -4px 0px #0075BE,
+    -4px 0px 0px #0075BE,
+    -4px 4px 0px #0075BE,
+    0px -4px 0px #0075BE,
+    0px 4px 0px #0075BE,
+    4px -4px 0px #0075BE,
+    4px 0px 0px #0075BE,
+    4px 4px 0px #0075BE,
+    
+    /* 3D depth effect */
+    -6px 6px 0px #003875,
+    -8px 8px 0px #003875,
+    -10px 10px 0px #002454,
+    -12px 12px 0px #002454,
+    
+    /* Drop shadow */
+    -14px 14px 20px rgba(0, 0, 0, 0.4);
+  
+  transform: perspective(500px) rotateX(15deg);
+  letter-spacing: 2px;
+  
+  /* Animation */
+  animation: pokemon-glow 3s ease-in-out infinite alternate;
+}
+
+@keyframes pokemon-glow {
+  0% {
+    filter: brightness(1) drop-shadow(0 0 10px rgba(255, 222, 0, 0.3));
+  }
+  100% {
+    filter: brightness(1.1) drop-shadow(0 0 20px rgba(255, 222, 0, 0.5));
+  }
+}
+
+.pokemon-subtitle {
+  font-family: 'Arial Black', 'Helvetica', sans-serif;
+  font-weight: 900;
+  text-shadow: 
+ 
+ 
+  
+    -4px 4px 8px rgba(0, 0, 0, 0.5);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .pokemon-logo {
+    font-size: 3rem !important;
+    text-shadow: 
+      -2px -2px 0px #0075BE,
+      -2px 0px 0px #0075BE,
+      -2px 2px 0px #0075BE,
+      0px -2px 0px #0075BE,
+      0px 2px 0px #0075BE,
+      2px -2px 0px #0075BE,
+      2px 0px 0px #0075BE,
+      2px 2px 0px #0075BE,
+      -3px 3px 0px #003875,
+      -4px 4px 0px #003875,
+      -5px 5px 0px #002454,
+      -6px 6px 10px rgba(0, 0, 0, 0.4);
+  }
+  
+  .pokemon-subtitle {
+    font-size: 1.5rem !important;
+  }
+}

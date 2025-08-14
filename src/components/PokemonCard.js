@@ -5,6 +5,7 @@ import { battleHelpers } from '../hooks/useBattle';
 /**
  * Pokemon Card Component
  * Displays individual Pokémon information, voting button, and results
+ * Now with Game Boy Pokédex styling
  * 
  * @param {Object} props - Component props
  * @param {Object} props.pokemon - Pokémon data object
@@ -15,11 +16,6 @@ import { battleHelpers } from '../hooks/useBattle';
  * @param {number} props.totalVotes - Total votes across both Pokémon
  */
 function PokemonCard({ pokemon, position, onVote, userVoted, votes, totalVotes }) {
-  // Add defensive checks to prevent errors
-  if (!pokemon) {
-    return <div className="bg-white rounded-2xl shadow-lg p-6">Loading Pokemon...</div>;
-  }
-
   // Calculate display values
   const percentage = battleHelpers.calculatePercentage(votes, totalVotes);
   const isWinner = totalVotes > 0 && votes > 0 && votes >= (totalVotes - votes);
@@ -31,13 +27,10 @@ function PokemonCard({ pokemon, position, onVote, userVoted, votes, totalVotes }
    */
   const handleImageError = (e) => {
     const img = e.target;
-    // Use different image sources based on what's available
-    if (pokemon.sprite && img.src !== pokemon.sprite) {
-      img.src = pokemon.sprite;
-    } else if (pokemon.id && !img.src.includes('placeholder')) {
+    if (img.src.includes('official-artwork')) {
       img.src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemon.id}.png`;
-    } else {
-      img.src = `https://via.placeholder.com/128x128/3B82F6/FFFFFF?text=${pokemon.name?.charAt(0).toUpperCase() || 'P'}`;
+    } else if (!img.src.includes('placeholder')) {
+      img.src = `https://via.placeholder.com/128x128/3B82F6/FFFFFF?text=${pokemon.name.charAt(0).toUpperCase()}`;
     }
   };
 
@@ -46,140 +39,175 @@ function PokemonCard({ pokemon, position, onVote, userVoted, votes, totalVotes }
    */
   const getTypeColor = (type) => {
     const typeColors = {
-      normal: 'bg-gray-100 text-gray-800',
-      fire: 'bg-red-100 text-red-800',
-      water: 'bg-blue-100 text-blue-800',
-      electric: 'bg-yellow-100 text-yellow-800',
-      grass: 'bg-green-100 text-green-800',
-      ice: 'bg-cyan-100 text-cyan-800',
-      fighting: 'bg-red-200 text-red-900',
-      poison: 'bg-purple-100 text-purple-800',
-      ground: 'bg-yellow-200 text-yellow-900',
-      flying: 'bg-indigo-100 text-indigo-800',
-      psychic: 'bg-pink-100 text-pink-800',
-      bug: 'bg-green-200 text-green-900',
-      rock: 'bg-yellow-300 text-yellow-900',
-      ghost: 'bg-purple-200 text-purple-900',
-      dragon: 'bg-indigo-200 text-indigo-900',
-      dark: 'bg-gray-300 text-gray-900',
-      steel: 'bg-gray-200 text-gray-800',
-      fairy: 'bg-pink-200 text-pink-900'
+      normal: '#A8A878',
+      fire: '#F08030',
+      water: '#6890F0', 
+      electric: '#F8D030',
+      grass: '#78C850',
+      ice: '#98D8D8',
+      fighting: '#C03028',
+      poison: '#A040A0',
+      ground: '#E0C068',
+      flying: '#A890F0',
+      psychic: '#F85888',
+      bug: '#A8B820',
+      rock: '#B8A038',
+      ghost: '#705898',
+      dragon: '#7038F8',
+      dark: '#705848',
+      steel: '#B8B8D0',
+      fairy: '#EE99AC'
     };
-    return typeColors[type] || 'bg-blue-100 text-blue-800';
+    return typeColors[type] || '#68A090';
   };
 
+  // Use pixelated sprite instead of official artwork
+  const pokemonImage = pokemon.sprites?.front_default || 
+                      `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemon.id}.png`;
+
   return (
-    <div className={`relative bg-white rounded-2xl shadow-lg overflow-hidden transition-all duration-300 pokemon-card ${
-      isWinner ? 'ring-4 ring-yellow-400 shadow-yellow-200 winner-glow' : ''
+    <div className={`relative bg-gradient-to-b from-red-600 to-red-800 border-4 border-red-900 rounded-lg shadow-2xl overflow-hidden transition-all duration-300 pokemon-card-retro ${
+      isWinner ? 'ring-4 ring-yellow-400 winner-glow' : ''
     } ${canVote ? 'hover:shadow-xl cursor-pointer' : ''}`}>
       
       {/* Winner Badge */}
       {isWinner && totalVotes > 0 && (
-        <div className="absolute top-3 right-3 z-10 bg-yellow-400 text-yellow-900 px-2 py-1 rounded-full text-xs font-bold flex items-center gap-1">
+        <div className="absolute top-2 right-2 z-10 bg-yellow-400 text-black px-2 py-1 border-2 border-yellow-600 text-xs font-bold flex items-center gap-1 retro-text">
           <Trophy className="w-3 h-3" />
-          Winner!
+          WINNER
         </div>
       )}
 
-      <div className="p-6">
-        {/* Pokemon Image */}
-        <div className="text-center mb-4">
+      {/* Header with Pokemon Name */}
+      <div className="bg-gray-300 border-b-2 border-gray-500 p-2 text-center">
+        <h3 className="text-lg font-bold text-black retro-text uppercase tracking-wider">
+          {pokemon.name}
+        </h3>
+      </div>
+
+      {/* Pokemon Image Container - Dark Screen - Square */}
+      <div className="bg-black border-4 border-gray-400 m-3 rounded-lg relative" style={{ aspectRatio: '1/1', minHeight: '500px' }}>
+        <div className="flex items-center justify-center h-full">
           <img 
-            src={pokemon.sprite || 
-                 `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemon.id}.png` ||
-                 `https://via.placeholder.com/128x128/3B82F6/FFFFFF?text=${pokemon.name?.charAt(0).toUpperCase() || 'P'}`}
-            alt={pokemon.name || 'Pokemon'}
-            className="w-32 h-32 mx-auto object-contain bounce-in"
+            src={pokemonImage}
+            alt={pokemon?.name || 'Pokemon'}
+            className="object-contain pixel-image bounce-in pokemon-breathing"
+            style={{ width: '480px', height: '480px' }}
             onError={handleImageError}
             loading="lazy"
           />
         </div>
-
-        {/* Pokemon Info */}
-        <div className="space-y-3 mb-6">
-          <h3 className="text-2xl font-bold text-gray-800 text-center capitalize">
-            {pokemon.name || 'Unknown Pokemon'}
-          </h3>
-          
-          {/* Types - FIXED: Handle the types array properly */}
-          <div className="flex justify-center gap-2 flex-wrap">
-            {pokemon.types && pokemon.types.length > 0 ? (
-              pokemon.types.map((type, index) => (
-                <span 
-                  key={index}
-                  className={`px-3 py-1 rounded-full text-xs font-medium capitalize ${getTypeColor(type)}`}
-                >
-                  {type}
-                </span>
-              ))
-            ) : (
-              <span className="px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                Unknown Type
-              </span>
-            )}
-          </div>
-
-          {/* Stats */}
-          <div className="grid grid-cols-3 gap-3 text-center">
-            <div className="bg-gray-50 rounded-lg p-2">
-              <div className="text-lg font-bold text-gray-800">{formattedStats.weight || 'N/A'}</div>
-              <div className="text-xs text-gray-600">Weight</div>
-            </div>
-            <div className="bg-gray-50 rounded-lg p-2">
-              <div className="text-lg font-bold text-gray-800">{formattedStats.height || 'N/A'}</div>
-              <div className="text-xs text-gray-600">Height</div>
-            </div>
-            <div className="bg-gray-50 rounded-lg p-2">
-              <div className="text-lg font-bold text-gray-800">{pokemon.base_experience || pokemon.baseExperience || 'N/A'}</div>
-              <div className="text-xs text-gray-600">Base EXP</div>
-            </div>
-          </div>
+        
+        {/* Scan lines effect */}
+        <div className="absolute inset-0 pointer-events-none opacity-20">
+          <div className="h-full w-full bg-gradient-to-b from-transparent via-green-400 to-transparent animate-pulse"></div>
         </div>
 
-        {/* Voting Section */}
-        {userVoted ? (
-          // Show Results
-          <div className="space-y-3">
-            <div className="flex justify-between items-center">
-              <span className="text-sm font-medium text-gray-700">
-                Votes: {votes.toLocaleString()}
-              </span>
-              <span className="text-lg font-bold text-blue-600">{percentage}%</span>
+        {/* Blinking overlay effect */}
+        <div className="absolute inset-0 pointer-events-none pokemon-blink"></div>
+      </div>
+
+      {/* Info Panel - All details in ONE red card */}
+      <div className="p-3">
+        <div className="bg-red-400 border-2 border-red-600 p-3 rounded space-y-1">
+          
+          {/* Type */}
+          <div className="retro-text text-left flex items-center">
+            <span className="text-xs font-bold text-black">Type:</span>
+            <div className="flex gap-2 ml-2">
+              {pokemon.types && pokemon.types.length > 0 ? (
+                pokemon.types.map((typeName, index) => (
+                  <span 
+                    key={index}
+                    className="px-3 py-1 text-xs font-bold text-white rounded-full retro-text uppercase border border-black"
+                    style={{ backgroundColor: getTypeColor(typeName) }}
+                  >
+                    {typeName}
+                  </span>
+                ))
+              ) : (
+                <span className="px-3 py-1 text-xs font-bold text-white rounded-full retro-text border border-black bg-gray-500">
+                  Loading...
+                </span>
+              )}
             </div>
-            
-            {/* Progress Bar */}
-            <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
-              <div 
-                className="bg-blue-500 h-3 rounded-full transition-all duration-500 ease-out progress-bar"
-                style={{ width: `${percentage}%` }}
-                role="progressbar"
-                aria-valuenow={percentage}
-                aria-valuemin="0"
-                aria-valuemax="100"
-                aria-label={`${pokemon.name} has ${percentage}% of votes`}
-              ></div>
-            </div>
-            
-            {/* User Vote Indicator */}
-            {userVoted === position && (
-              <div className="text-center text-sm text-green-600 font-medium flex items-center justify-center gap-1">
-                <span className="text-green-500">✓</span>
-                Your vote
-              </div>
-            )}
           </div>
-        ) : (
-          // Show Vote Button
-          <button
-            onClick={() => onVote(position)}
-            className="w-full bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 text-white font-bold py-3 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2 vote-button"
-            disabled={!canVote}
-            aria-label={`Vote for ${pokemon.name}`}
-          >
-            <Zap className="w-5 h-5" />
-            Vote for {pokemon.name}
-          </button>
-        )}
+
+          {/* Experience */}
+          <div className="retro-text text-left">
+            <span className="text-xs font-bold text-black">Experience:</span>
+            <span className="text-lg font-bold text-white ml-2">
+              {pokemon?.baseExperience || '0'}
+            </span>
+          </div>
+
+          {/* Height */}
+          <div className="retro-text text-left">
+            <span className="text-xs font-bold text-black">Height:</span>
+            <span className="text-lg font-bold text-white ml-2">
+              {formattedStats?.height || '0.0m'}
+            </span>
+          </div>
+
+          {/* Weight */}
+          <div className="retro-text text-left">
+            <span className="text-xs font-bold text-black">Weight:</span>
+            <span className="text-lg font-bold text-white ml-2">
+              {formattedStats?.weight || '0.0kg'}
+            </span>
+          </div>
+
+        </div>
+
+        {/* Voting Section - Keep all existing functionality */}
+        <div className="mt-4">
+          {userVoted ? (
+            // Show Results
+            <div className="space-y-2">
+              <div className="bg-white border-2 border-gray-400 p-2 rounded">
+                <div className="flex justify-between items-center">
+                  <span className="text-xs font-bold text-black retro-text">
+                    VOTES: {votes.toLocaleString()}
+                  </span>
+                  <span className="text-lg font-bold text-blue-600 retro-text">{percentage}%</span>
+                </div>
+                
+                {/* Pixel Progress Bar */}
+                <div className="w-full bg-gray-300 border border-gray-500 h-4 mt-2 relative overflow-hidden">
+                  <div 
+                    className="bg-blue-500 h-full transition-all duration-500 ease-out progress-bar border-r border-blue-700"
+                    style={{ 
+                      width: `${percentage}%`,
+                      background: percentage > 50 ? '#00FF00' : '#0066FF'
+                    }}
+                    role="progressbar"
+                    aria-valuenow={percentage}
+                    aria-valuemin="0"
+                    aria-valuemax="100"
+                    aria-label={`${pokemon?.name || 'Pokemon'} has ${percentage}% of votes`}
+                  ></div>
+                </div>
+                
+                {/* User Vote Indicator */}
+                {userVoted === position && (
+                  <div className="text-center text-xs text-green-600 font-bold mt-1 retro-text">
+                    ★ YOUR VOTE ★
+                  </div>
+                )}
+              </div>
+            </div>
+          ) : (
+            // Show Vote Button
+            <button
+              onClick={() => onVote(position)}
+              className="bg-yellow-400 hover:bg-yellow-300 border-4 border-yellow-600 text-black font-bold py-2 px-4 transition-all duration-200 retro-text uppercase tracking-wider retro-button rounded-full"
+              disabled={!canVote}
+              aria-label={`Vote for ${pokemon?.name || 'Pokemon'}`}
+            >
+              VOTE
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );
