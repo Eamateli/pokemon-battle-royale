@@ -43,6 +43,15 @@ function BattleArena() {
   };
 
   /**
+   * Generate a simple user ID for vote tracking
+   * In production, this would come from authentication
+   * @returns {string} Simple user identifier
+   */
+  const generateUserId = () => {
+    return 'user_' + Math.random().toString(36).substr(2, 9);
+  };
+
+  /**
    * Handle user vote submission
    * @param {string} pokemonChoice - Which Pokémon was voted for ('pokemon1' or 'pokemon2')
    */
@@ -92,124 +101,128 @@ function BattleArena() {
   };
 
   /**
-   * Generate a simple user ID for demo purposes
-   * In production, this would come from user authentication
+   * Determine the winner of the current battle
+   * @returns {string|null} 'pokemon1', 'pokemon2', or null for tie
    */
-  const generateUserId = () => {
-    return 'user_' + Math.random().toString(36).substr(2, 9);
+  const getWinner = () => {
+    if (totalVotes === 0) return null;
+    if (votes.pokemon1 > votes.pokemon2) return 'pokemon1';
+    if (votes.pokemon2 > votes.pokemon1) return 'pokemon2';
+    return 'tie';
   };
 
   /**
-   * Determine which Pokémon is currently winning
+   * Get winner information for display
+   * @returns {Object} Winner data including name and winner status
    */
   const getWinnerInfo = () => {
-    if (totalVotes === 0) return null;
-    
-    if (votes.pokemon1 > votes.pokemon2) {
-      return { winner: pokemon1, percentage: Math.round((votes.pokemon1 / totalVotes) * 100) };
-    } else if (votes.pokemon2 > votes.pokemon1) {
-      return { winner: pokemon2, percentage: Math.round((votes.pokemon2 / totalVotes) * 100) };
+    const winner = getWinner();
+    if (!winner || winner === 'tie') {
+      return { winner: winner, name: null };
     }
-    return { winner: null, percentage: 50 }; // Tie
+    
+    const winnerPokemon = winner === 'pokemon1' ? pokemon1 : pokemon2;
+    return {
+      winner,
+      name: winnerPokemon?.name || 'Unknown',
+      pokemon: winnerPokemon
+    };
   };
 
-  // Show loading state
+  // Show loading spinner while fetching Pokémon
   if (loading) {
-    return <LoadingSpinner message="Preparing battle arena..." />;
+    return <LoadingSpinner message="Loading epic Pokémon battle..." />;
   }
 
-  // Show error state
+  // Show error message if something went wrong
   if (error) {
     return <ErrorMessage error={error} onRetry={handleRetry} />;
   }
 
+  // Get winner information for results display
   const winnerInfo = getWinnerInfo();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-400 via-purple-500 to-pink-500">
-      <div className="container mx-auto px-4 py-8">
+      {/* Header */}
+      <header className="text-center py-8">
+        <h1 className="text-5xl md:text-6xl font-bold text-white mb-4 drop-shadow-lg">
+          ⚡ Pokémon Battle Royale ⚡
+        </h1>
+        <p className="text-white/90 text-xl mb-6">
+          Choose your champion and watch the votes roll in!
+        </p>
         
-        {/* Header Section */}
-        <header className="text-center mb-8">
-          <h1 className="text-4xl md:text-6xl font-bold text-white mb-4">
-            ⚡ Pokémon Battle Royale ⚡
-          </h1>
-          
-          <p className="text-xl text-white/90 mb-6">
-            Choose your champion and watch the votes roll in!
-          </p>
-          
-          {/* Status Bar */}
-          <div className="flex justify-center items-center gap-6 flex-wrap">
-            <ConnectionStatus status={connectionStatus} />
-            
-            {totalVotes > 0 && (
-              <div className="flex items-center gap-2 text-white">
-                <Users className="w-5 h-5" />
-                <span className="font-medium">
-                  {totalVotes.toLocaleString()} total votes
-                </span>
-              </div>
-            )}
-
-            <button
-              onClick={handleNewBattle}
-              className="bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white font-bold py-2 px-4 rounded-lg transition-all duration-200 flex items-center gap-2"
-              disabled={loading}
-            >
-              <RotateCcw className="w-4 h-4" />
-              New Battle
-            </button>
+        {/* Connection Status & Stats */}
+        <div className="flex justify-center items-center gap-6 mb-4">
+          <ConnectionStatus status={connectionStatus} />
+          <div className="flex items-center gap-2 text-white/80">
+            <Users className="w-5 h-5" />
+            <span className="font-medium">{totalVotes.toLocaleString()} total votes</span>
           </div>
-        </header>
+        </div>
 
-        {/* Battle Cards */}
-        <main className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-          <PokemonCard
-            pokemon={pokemon1}
-            position="pokemon1"
-            onVote={handleVote}
-            userVoted={userVoted}
-            votes={votes.pokemon1}
-            totalVotes={totalVotes}
-          />
+        {/* New Battle Button */}
+        <button
+          onClick={handleNewBattle}
+          disabled={loading}
+          className="bg-white/20 hover:bg-white/30 text-white font-bold py-2 px-6 rounded-full transition-colors duration-200 flex items-center gap-2 mx-auto disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <RotateCcw className="w-4 h-4" />
+          New Random Battle
+        </button>
+      </header>
+
+      <div className="container mx-auto px-4 pb-8">
+        {/* Battle Arena */}
+        <div className="grid md:grid-cols-2 gap-8 max-w-6xl mx-auto mb-12">
+          {pokemon1 && (
+            <PokemonCard
+              pokemon={pokemon1}
+              position="pokemon1"
+              onVote={handleVote}
+              userVoted={userVoted}
+              votes={votes.pokemon1}
+              totalVotes={totalVotes}
+            />
+          )}
           
-          <PokemonCard
-            pokemon={pokemon2}
-            position="pokemon2"
-            onVote={handleVote}
-            userVoted={userVoted}
-            votes={votes.pokemon2}
-            totalVotes={totalVotes}
-          />
-        </main>
+          {pokemon2 && (
+            <PokemonCard
+              pokemon={pokemon2}
+              position="pokemon2"
+              onVote={handleVote}
+              userVoted={userVoted}
+              votes={votes.pokemon2}
+              totalVotes={totalVotes}
+            />
+          )}
+        </div>
 
-        {/* Battle Results Summary */}
+        {/* Results Section */}
         {userVoted && totalVotes > 0 && (
-          <section className="max-w-2xl mx-auto mt-8 bg-white/10 backdrop-blur-sm rounded-2xl p-6">
-            <h3 className="text-2xl font-bold text-white text-center mb-4">
-              🏆 Battle Results
-            </h3>
-            
-            <div className="space-y-4">
-              <div className="flex justify-between text-white">
-                <span className="capitalize font-medium">{pokemon1.name}</span>
-                <span className="font-bold">
-                  {votes.pokemon1.toLocaleString()} votes ({Math.round((votes.pokemon1 / totalVotes) * 100)}%)
-                </span>
-              </div>
+          <section className="max-w-4xl mx-auto">
+            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 text-center">
+              <h2 className="text-2xl font-bold text-white mb-4">
+                🏆 Battle Results
+              </h2>
               
-              <div className="flex justify-between text-white">
-                <span className="capitalize font-medium">{pokemon2.name}</span>
-                <span className="font-bold">
-                  {votes.pokemon2.toLocaleString()} votes ({Math.round((votes.pokemon2 / totalVotes) * 100)}%)
-                </span>
-              </div>
+              {winnerInfo?.winner && winnerInfo.winner !== 'tie' && (
+                <div className="text-center">
+                  <p className="text-white font-bold text-xl mb-2">
+                    🎉 {winnerInfo.name?.charAt(0).toUpperCase() + winnerInfo.name?.slice(1)} wins! 🎉
+                  </p>
+                  <p className="text-white/80">
+                    With {winnerInfo.winner === 'pokemon1' ? votes.pokemon1 : votes.pokemon2} votes 
+                    ({Math.round(((winnerInfo.winner === 'pokemon1' ? votes.pokemon1 : votes.pokemon2) / totalVotes) * 100)}% of total votes)
+                  </p>
+                </div>
+              )}
 
-              {winnerInfo?.winner && (
+              {winnerInfo?.winner === 'tie' && (
                 <div className="text-center pt-4 border-t border-white/20">
-                  <p className="text-yellow-300 font-bold text-lg">
-                    🎉 {winnerInfo.winner.name.toUpperCase()} is leading with {winnerInfo.percentage}%!
+                  <p className="text-white font-bold text-lg">
+                    🤝 It's a tie! Both Pokémon are equally matched!
                   </p>
                 </div>
               )}
