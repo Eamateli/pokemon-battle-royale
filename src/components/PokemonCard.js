@@ -15,6 +15,11 @@ import { battleHelpers } from '../hooks/useBattle';
  * @param {number} props.totalVotes - Total votes across both Pokémon
  */
 function PokemonCard({ pokemon, position, onVote, userVoted, votes, totalVotes }) {
+  // Add defensive checks to prevent errors
+  if (!pokemon) {
+    return <div className="bg-white rounded-2xl shadow-lg p-6">Loading Pokemon...</div>;
+  }
+
   // Calculate display values
   const percentage = battleHelpers.calculatePercentage(votes, totalVotes);
   const isWinner = totalVotes > 0 && votes > 0 && votes >= (totalVotes - votes);
@@ -26,10 +31,13 @@ function PokemonCard({ pokemon, position, onVote, userVoted, votes, totalVotes }
    */
   const handleImageError = (e) => {
     const img = e.target;
-    if (img.src.includes('official-artwork')) {
+    // Use different image sources based on what's available
+    if (pokemon.sprite && img.src !== pokemon.sprite) {
+      img.src = pokemon.sprite;
+    } else if (pokemon.id && !img.src.includes('placeholder')) {
       img.src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemon.id}.png`;
-    } else if (!img.src.includes('placeholder')) {
-      img.src = `https://via.placeholder.com/128x128/3B82F6/FFFFFF?text=${pokemon.name.charAt(0).toUpperCase()}`;
+    } else {
+      img.src = `https://via.placeholder.com/128x128/3B82F6/FFFFFF?text=${pokemon.name?.charAt(0).toUpperCase() || 'P'}`;
     }
   };
 
@@ -77,10 +85,10 @@ function PokemonCard({ pokemon, position, onVote, userVoted, votes, totalVotes }
         {/* Pokemon Image */}
         <div className="text-center mb-4">
           <img 
-            src={pokemon.sprites?.other?.['official-artwork']?.front_default || 
-                 pokemon.sprites?.front_default || 
-                 `https://via.placeholder.com/128x128/3B82F6/FFFFFF?text=${pokemon.name.charAt(0).toUpperCase()}`}
-            alt={pokemon.name}
+            src={pokemon.sprite || 
+                 `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemon.id}.png` ||
+                 `https://via.placeholder.com/128x128/3B82F6/FFFFFF?text=${pokemon.name?.charAt(0).toUpperCase() || 'P'}`}
+            alt={pokemon.name || 'Pokemon'}
             className="w-32 h-32 mx-auto object-contain bounce-in"
             onError={handleImageError}
             loading="lazy"
@@ -90,33 +98,39 @@ function PokemonCard({ pokemon, position, onVote, userVoted, votes, totalVotes }
         {/* Pokemon Info */}
         <div className="space-y-3 mb-6">
           <h3 className="text-2xl font-bold text-gray-800 text-center capitalize">
-            {pokemon.name}
+            {pokemon.name || 'Unknown Pokemon'}
           </h3>
           
-          {/* Types */}
+          {/* Types - FIXED: Handle the types array properly */}
           <div className="flex justify-center gap-2 flex-wrap">
-            {pokemon.types?.map((typeInfo, index) => (
-              <span 
-                key={index}
-                className={`px-3 py-1 rounded-full text-xs font-medium capitalize ${getTypeColor(typeInfo.type.name)}`}
-              >
-                {typeInfo.type.name}
+            {pokemon.types && pokemon.types.length > 0 ? (
+              pokemon.types.map((type, index) => (
+                <span 
+                  key={index}
+                  className={`px-3 py-1 rounded-full text-xs font-medium capitalize ${getTypeColor(type)}`}
+                >
+                  {type}
+                </span>
+              ))
+            ) : (
+              <span className="px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                Unknown Type
               </span>
-            ))}
+            )}
           </div>
 
           {/* Stats */}
           <div className="grid grid-cols-3 gap-3 text-center">
             <div className="bg-gray-50 rounded-lg p-2">
-              <div className="text-lg font-bold text-gray-800">{formattedStats.weight}</div>
+              <div className="text-lg font-bold text-gray-800">{formattedStats.weight || 'N/A'}</div>
               <div className="text-xs text-gray-600">Weight</div>
             </div>
             <div className="bg-gray-50 rounded-lg p-2">
-              <div className="text-lg font-bold text-gray-800">{formattedStats.height}</div>
+              <div className="text-lg font-bold text-gray-800">{formattedStats.height || 'N/A'}</div>
               <div className="text-xs text-gray-600">Height</div>
             </div>
             <div className="bg-gray-50 rounded-lg p-2">
-              <div className="text-lg font-bold text-gray-800">{pokemon.base_experience}</div>
+              <div className="text-lg font-bold text-gray-800">{pokemon.base_experience || pokemon.baseExperience || 'N/A'}</div>
               <div className="text-xs text-gray-600">Base EXP</div>
             </div>
           </div>
