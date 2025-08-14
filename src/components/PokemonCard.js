@@ -98,7 +98,7 @@ function PokemonCard({ pokemon, position, onVote, userVoted, votes, totalVotes }
           {userVoted === position && (
             <div className="text-center mt-1">
               <span className="text-sm font-bold text-green-600 retro-text">
-                ✓ YOUR VOTE
+                YOU VOTED FOR
               </span>
             </div>
           )}

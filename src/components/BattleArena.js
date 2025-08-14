@@ -228,7 +228,7 @@ function BattleArena() {
             <span style={{ color: 'white', textShadow: '2px 2px 4px rgba(0,0,0,0.8)' }}>Battle</span>  <span style={{ color: 'white', textShadow: '2px 2px 4px rgba(0,0,0,0.8)' }}>Royale</span>
           </h2>
           <p className="text-gray-800 text-xl mb-6 font-semibold drop-shadow">
-            Vote your champion and see the Win!
+            Vote your champion and see who Wins!
           </p>
         
           {/* Connection Status & Stats - WITH DARKER BACKGROUND */}
