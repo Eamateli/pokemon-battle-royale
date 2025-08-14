@@ -17,14 +17,14 @@ function ConnectionStatus({ status, showIcon = true, className = "" }) {
         return {
           color: 'bg-green-500',
           text: 'Live updates active',
-          textColor: 'text-green-600',
+          textColor: 'text-white', // Changed to white
           icon: Wifi
         };
       case 'connecting':
         return {
           color: 'bg-yellow-500',
           text: 'Connecting...',
-          textColor: 'text-yellow-600',
+          textColor: 'text-white', // Changed to white
           icon: Wifi
         };
       case 'disconnected':
@@ -32,7 +32,7 @@ function ConnectionStatus({ status, showIcon = true, className = "" }) {
         return {
           color: 'bg-red-500',
           text: 'Disconnected',
-          textColor: 'text-red-600',
+          textColor: 'text-white', // Changed to white
           icon: WifiOff
         };
     }
@@ -47,12 +47,12 @@ function ConnectionStatus({ status, showIcon = true, className = "" }) {
       
       <div className={`w-2 h-2 rounded-full ${config.color}`}></div>
       
-      <span className="text-gray-600">
+      <span className="text-white"> {/* Changed to white */}
         {config.text}
       </span>
       
       {status === 'connected' && (
-        <span className="text-xs text-gray-500">
+        <span className="text-xs text-white"> {/* Changed to white */}
           • Real-time
         </span>
       )}
