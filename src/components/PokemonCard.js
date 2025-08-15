@@ -16,6 +16,9 @@ import { battleHelpers } from '../hooks/useBattle';
  * @param {number} props.totalVotes - Total votes across both Pokémon
  */
 function PokemonCard({ pokemon, position, onVote, userVoted, votes, totalVotes }) {
+  // ONLY CHANGE: Add null check
+  if (!pokemon) return null;
+
   // Calculate display values
   const percentage = battleHelpers.calculatePercentage(votes, totalVotes);
   const isWinner = totalVotes > 0 && votes > 0 && votes >= (totalVotes - votes);
