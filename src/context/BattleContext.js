@@ -44,6 +44,9 @@ function battleReducer(state, action) {
     case ACTIONS.LOCK_VOTING:
       console.log('🔒 REDUCER: Setting votingLocked to true');
       return { ...state, votingLocked: true };
+
+    case ACTIONS.UNLOCK_VOTING:
+      return { ...state, votingLocked: false };
     
     case ACTIONS.SET_BANNER_DISMISSED:
       return { ...state, bannerDismissed: action.payload };
@@ -55,7 +58,8 @@ function battleReducer(state, action) {
         loading: true,
         connectionStatus: state.connectionStatus,
         votingLocked: false,
-        bannerDismissed: false
+        bannerDismissed: false,
+        totalVotes: 0
       };
     
     default:

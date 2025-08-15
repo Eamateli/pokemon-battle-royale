@@ -21,7 +21,7 @@ function PokemonCard({ pokemon, position, onVote, userVoted, votes, totalVotes }
 
   // Calculate display values
   const percentage = battleHelpers.calculatePercentage(votes, totalVotes);
-  const isWinner = totalVotes > 0 && votes > 0 && votes >= (totalVotes - votes);
+  const isWinner = userVoted && totalVotes > 0 && votes > 0 && votes >= (totalVotes - votes);
   const canVote = !userVoted;
   const formattedStats = battleHelpers.formatStats(pokemon);
 
