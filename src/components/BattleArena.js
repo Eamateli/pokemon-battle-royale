@@ -51,10 +51,36 @@ function BattleArena() {
       const pokemonData = await pokemonAPI.fetchBothPokemon(p1, p2);
       dispatch({ type: ACTIONS.SET_POKEMON, payload: pokemonData });
       
-      // Reset votes for new battle
-      dispatch({ type: ACTIONS.SET_VOTES, payload: { pokemon1: 0, pokemon2: 0 } });
+      // Reset votes for new battle (FIXED ORDER)
+      dispatch({ type: ACTIONS.UNLOCK_VOTING }); // ✅ Unlock first!
+      dispatch({ type: ACTIONS.SET_VOTES, payload: { pokemon1: 0, pokemon2: 0 } }); // ✅ Now works!
       dispatch({ type: ACTIONS.SET_USER_VOTED, payload: null });
-      dispatch({ type: ACTIONS.UNLOCK_VOTING });
+      
+      // 🆕 NEW: Generate initial random votes for new battles
+      setTimeout(() => {
+        const initialVotes = {
+          pokemon1: Math.floor(Math.random() * 30) + 10, // 10-39 votes
+          pokemon2: Math.floor(Math.random() * 30) + 10  // 10-39 votes
+        };
+        dispatch({ type: ACTIONS.SET_VOTES, payload: initialVotes });
+        
+        // Start gradual vote increases to simulate ongoing voting
+        let voteCount = 0;
+        const voteInterval = setInterval(() => {
+          if (voteCount >= 5) { // Stop after 5 updates
+            clearInterval(voteInterval);
+            return;
+          }
+          
+          const newVotes = {
+            pokemon1: initialVotes.pokemon1 + Math.floor(Math.random() * 3) + voteCount * 2,
+            pokemon2: initialVotes.pokemon2 + Math.floor(Math.random() * 3) + voteCount * 2
+          };
+          dispatch({ type: ACTIONS.SET_VOTES, payload: newVotes });
+          voteCount++;
+        }, 2000); // Update every 2 seconds
+        
+      }, 1000); // Start after 1 second
       
       // Hide winner banner for new battle
       setShowWinnerBanner(false);
