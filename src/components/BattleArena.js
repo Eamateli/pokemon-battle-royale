@@ -54,7 +54,7 @@ function BattleArena() {
       // Reset votes for new battle
       dispatch({ type: ACTIONS.SET_VOTES, payload: { pokemon1: 0, pokemon2: 0 } });
       dispatch({ type: ACTIONS.SET_USER_VOTED, payload: null });
-      dispatch({ type: ACTIONS.LOCK_VOTING, payload: false });
+      dispatch({ type: ACTIONS.UNLOCK_VOTING });
       
       // Hide winner banner for new battle
       setShowWinnerBanner(false);
