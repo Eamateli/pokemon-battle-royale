@@ -46,6 +46,7 @@ function battleReducer(state, action) {
       return { ...state, votingLocked: true };
 
     case ACTIONS.UNLOCK_VOTING:
+      console.log('🔓 REDUCER: Setting votingLocked to false');
       return { ...state, votingLocked: false };
     
     case ACTIONS.SET_BANNER_DISMISSED:
@@ -68,12 +69,19 @@ function battleReducer(state, action) {
 }
 
 /**
- * Enhanced Mock WebSocket implementation with proper vote locking
+ * 🔧 FIXED: Enhanced Mock WebSocket implementation with proper vote locking
+ * 
+ * Key Changes:
+ * 1. Proper cleanup of intervals and timeouts
+ * 2. Synchronized locking mechanism
+ * 3. Immediate interval cleanup when locked
+ * 4. Better state management
  */
 function createMockWebSocket(dispatch) {
   let voteTimeout = null;
   let voteInterval = null;
   let isLocked = false; // Local lock flag
+  let currentVotes = null; // Track current vote state
   
   console.log('🔌 Creating new WebSocket instance');
   
@@ -81,7 +89,7 @@ function createMockWebSocket(dispatch) {
     send: (data) => {
       console.log('🚀 WebSocket send called');
       
-      // Clear any existing timers first
+      // Clear any existing timers first to prevent conflicts
       if (voteTimeout) {
         clearTimeout(voteTimeout);
         console.log('🧹 Cleared existing timeout');
@@ -91,42 +99,62 @@ function createMockWebSocket(dispatch) {
         console.log('🧹 Cleared existing interval');
       }
       
+      // Reset lock for new vote
+      isLocked = false;
+      
       setTimeout(() => {
         const message = JSON.parse(data);
+        
+        // Only process votes if not already locked
         if (message.type === 'vote' && !isLocked) {
           console.log('✅ Processing vote, not locked');
           
-          // Initial vote with random numbers
-          const randomVotes = {
+          // Generate initial vote with random numbers
+          currentVotes = {
             pokemon1: Math.floor(Math.random() * 50) + (message.pokemon === 'pokemon1' ? 1 : 0),
             pokemon2: Math.floor(Math.random() * 50) + (message.pokemon === 'pokemon2' ? 1 : 0)
           };
           
-          console.log('📊 Initial votes:', randomVotes);
-          dispatch({ type: ACTIONS.SET_VOTES, payload: randomVotes });
+          console.log('📊 Initial votes:', currentVotes);
+          dispatch({ type: ACTIONS.SET_VOTES, payload: currentVotes });
           
-          // Start the interval for ongoing updates
+          // 🔧 FIX: Start the interval for ongoing updates
           voteInterval = setInterval(() => {
+            // Double check lock status to be extra safe
             if (isLocked) {
-              console.log('🚫 Interval fired but locked - stopping');
+              console.log('🚫 Interval fired but locked - stopping immediately');
               clearInterval(voteInterval);
+              voteInterval = null;
               return;
             }
             
-            const newVotes = {
-              pokemon1: randomVotes.pokemon1 + Math.floor(Math.random() * 3),
-              pokemon2: randomVotes.pokemon2 + Math.floor(Math.random() * 3)
+            // Update votes with small increments
+            currentVotes = {
+              pokemon1: currentVotes.pokemon1 + Math.floor(Math.random() * 3),
+              pokemon2: currentVotes.pokemon2 + Math.floor(Math.random() * 3)
             };
-            console.log('📈 Updating votes:', newVotes);
-            dispatch({ type: ACTIONS.SET_VOTES, payload: newVotes });
+            
+            console.log('📈 Updating votes:', currentVotes);
+            dispatch({ type: ACTIONS.SET_VOTES, payload: currentVotes });
           }, 2000);
           
-          // Lock voting after 3 seconds
+          // 🔧 FIX: Lock voting after 3 seconds with proper cleanup
           voteTimeout = setTimeout(() => {
             console.log('🔒 LOCKING VOTES NOW');
-            isLocked = true; // Set local lock FIRST
-            clearInterval(voteInterval);
+            
+            // Set local lock FIRST to prevent any race conditions
+            isLocked = true;
+            
+            // Clear the interval immediately
+            if (voteInterval) {
+              clearInterval(voteInterval);
+              voteInterval = null;
+              console.log('🧹 Vote interval cleared during lock');
+            }
+            
+            // Dispatch the lock action to global state
             dispatch({ type: ACTIONS.LOCK_VOTING });
+            
             console.log('✅ Voting locked - no more changes should happen');
           }, 3000);
           
@@ -137,11 +165,23 @@ function createMockWebSocket(dispatch) {
     },
     
     close: () => {
-      console.log('🔌 WebSocket close called');
-      if (voteTimeout) clearTimeout(voteTimeout);
-      if (voteInterval) clearInterval(voteInterval);
+      console.log('🔌 WebSocket close called - cleaning up all timers');
+      
+      // Clean up all timers and reset state
+      if (voteTimeout) {
+        clearTimeout(voteTimeout);
+        voteTimeout = null;
+      }
+      if (voteInterval) {
+        clearInterval(voteInterval);
+        voteInterval = null;
+      }
+      
+      // Reset lock state
       isLocked = false;
-      console.log('WebSocket connection closed');
+      currentVotes = null;
+      
+      console.log('🧹 WebSocket connection closed and cleaned up');
     },
     
     readyState: 1
@@ -165,7 +205,7 @@ export function BattleProvider({ children }) {
 
     return () => {
       console.log('🧹 BattleProvider cleanup');
-      if (mockWs.close) {
+      if (mockWs && mockWs.close) {
         mockWs.close();
       }
     };
