@@ -298,17 +298,20 @@ function BattleArena() {
           </p>
         
           {/* Connection Status & Stats - WITH DARKER BACKGROUND */}
-          <div className="flex justify-center items-center gap-6 mb-4">
-            <div className="bg-black/40 backdrop-blur-sm rounded-lg px-4 py-2">
-              <ConnectionStatus status={connectionStatus} className="text-white" />
-            </div>
-            <div className="bg-black/40 backdrop-blur-sm rounded-lg px-4 py-2">
-              <div className="flex items-center gap-2 text-white font-semibold drop-shadow">
-                <Users className="w-5 h-5" />
-                <span className="font-medium">{totalVotes.toLocaleString()} total votes</span>
+          <div className="flex justify-center mb-4">
+            <div className="bg-black/40 backdrop-blur-sm rounded-lg px-6 py-3 max-w-sm">
+              <div className="text-center space-y-1">
+                <div className="flex items-center justify-center">
+                  <ConnectionStatus status={connectionStatus} className="text-white" />
+                </div>
+                <div className="flex items-center justify-center gap-2 text-white font-semibold">
+                  <Users className="w-5 h-5" />
+                  <span className="font-medium">{totalVotes.toLocaleString()} total votes</span>
+                </div>
               </div>
             </div>
           </div>
+         
 
           {/* New Battle Button */}
           <button

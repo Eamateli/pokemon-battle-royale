@@ -167,7 +167,7 @@ function createMockWebSocket(dispatch) {
             console.log('✅ Voting locked - battle over');
             userVoteTimeout = null;
             
-          }, 3000); // 🔧 FIXED: EXACTLY 3 SECONDS (was 2 seconds)
+          }, 5000); // 🔧 FIXED: EXACTLY 5 SECONDS 
           
         } else if (isLocked) {
           console.log('🚫 Vote ignored - already locked');

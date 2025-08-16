@@ -52,16 +52,16 @@
 
 /* Winner glow effect */
 .winner-glow {
-  box-shadow: 0 0 30px rgba(251, 191, 36, 0.5);
+  box-shadow: 0 0 90px rgba(251, 191, 36, 0.5);
   animation: glow 2s ease-in-out infinite alternate;
 }
 
 @keyframes glow {
   from {
-    box-shadow: 0 0 20px rgba(251, 191, 36, 0.5);
+    box-shadow: 0 0 60px rgba(251, 191, 36, 0.5);
   }
   to {
-    box-shadow: 0 0 30px rgba(251, 191, 36, 0.8);
+    box-shadow: 0 0 90px rgba(251, 191, 36, 0.8);
   }
 }
 

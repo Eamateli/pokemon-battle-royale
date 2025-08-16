@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Zap, Trophy } from 'lucide-react';
+import React from 'react';
+import { Trophy } from 'lucide-react';
 import { battleHelpers } from '../hooks/useBattle';
 
 /**
@@ -17,53 +17,26 @@ import { battleHelpers } from '../hooks/useBattle';
  * @param {boolean} props.votingLocked - Whether voting is currently locked
  */
 function PokemonCard({ pokemon, position, onVote, userVoted, votes, totalVotes, votingLocked }) {
-  // Local state to delay winner display
-  const [showWinner, setShowWinner] = useState(false);
-  
-  // Calculate display values (moved up before early return)
-  const percentage = battleHelpers.calculatePercentage(votes, totalVotes);
-  
-  // Check if this Pokemon should be winner (but don't show yet)
-  const otherVotes = totalVotes - votes;
-  const shouldBeWinner = userVoted && 
-                         totalVotes > 0 && 
-                         votes > 0 && 
-                         votes > otherVotes && // Must have MORE votes (not equal)
-                         votingLocked; // Only after voting is locked
-
-  // Effect to delay winner display after voting is locked
-  useEffect(() => {
-    if (shouldBeWinner && votingLocked) {
-      // Add 1 second delay after voting is locked to ensure countdown is finished
-      const winnerTimer = setTimeout(() => {
-        setShowWinner(true);
-      }, 1000);
-
-      return () => clearTimeout(winnerTimer);
-    } else if (!shouldBeWinner) {
-      // Reset if no longer winner
-      setShowWinner(false);
-    }
-  }, [shouldBeWinner, votingLocked]);
-
-  // Reset winner display when userVoted changes (new battle)
-  useEffect(() => {
-    if (!userVoted) {
-      setShowWinner(false);
-    }
-  }, [userVoted]);
-
   // ONLY CHANGE: Add null check
   if (!pokemon) return null;
 
-
-
+  // Calculate display values
+  const percentage = battleHelpers.calculatePercentage(votes, totalVotes);
+  
+  // FIXED: Simple winner logic - only show when voting is locked and this Pokemon has more votes
+  const otherVotes = totalVotes - votes;
+  const isWinner = userVoted && 
+                   totalVotes > 0 && 
+                   votes > 0 && 
+                   votes > otherVotes && // Must have MORE votes (not equal)
+                   votingLocked; // Only show when voting is locked (no extra delays)
+  
   const canVote = !userVoted;
   const formattedStats = battleHelpers.formatStats(pokemon);
 
   // Determine animation direction for progress bar
   const isLeftPokemon = position === 'pokemon1';
-  const progressBarClass = isLeftPokemon ? 'vote-bar-left' : 'vote-bar-right';
+  const progressBarClass = isLeftPokemon ? 'vote-bar-left' : 'vote-bar-left';
 
   /**
    * Handle image loading errors by falling back to alternative sprites
@@ -152,11 +125,11 @@ function PokemonCard({ pokemon, position, onVote, userVoted, votes, totalVotes, 
 
       {/* POKEMON CARD - NO VOTES INSIDE */}
       <div className={`relative bg-gradient-to-b from-red-600 to-red-800 border-4 border-red-900 rounded-lg shadow-2xl overflow-hidden transition-all duration-300 pokemon-card-retro ${
-        showWinner ? 'ring-4 ring-yellow-400 winner-glow' : ''
+        isWinner ? 'ring-4 ring-yellow-400 winner-glow' : ''
       } ${canVote ? 'hover:shadow-xl cursor-pointer' : ''}`}>
         
-        {/* Winner Badge - ONLY SHOW AFTER DELAY */}
-        {showWinner && (
+        {/* Winner Badge - ONLY SHOW WHEN VOTING IS LOCKED */}
+        {isWinner && (
           <div className="absolute top-2 right-2 z-10 bg-yellow-400 text-black px-2 py-1 border-2 border-yellow-600 text-xs font-bold flex items-center gap-1 retro-text">
             <Trophy className="w-3 h-3" />
             WINNER
