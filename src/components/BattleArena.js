@@ -19,24 +19,30 @@ function BattleArena() {
   // State for winner banner
   const [showWinnerBanner, setShowWinnerBanner] = useState(false);
   const [bannerExiting, setBannerExiting] = useState(false);
-  const [bannerDismissed, setBannerDismissed] = useState(false); // NEW: Track if banner was dismissed
+  const [bannerDismissed, setBannerDismissed] = useState(false);
+  
+  // 🔧 NEW: State for countdown banner
+  const [showCountdown, setShowCountdown] = useState(false);
+  const [countdown, setCountdown] = useState(5); // 🔧 FIXED: 5 seconds instead of 3
 
   // Load initial Pokémon when component mounts
   useEffect(() => {
     loadPokemon();
   }, []);
 
+  // 🔧 NEW: Start auto-voting when Pokemon are loaded and WebSocket is ready
+  useEffect(() => {
+    if (pokemon1 && pokemon2 && ws && ws.startAutoVoting && !userVoted) {
+      console.log('🚀 Starting auto-vote simulation for new battle');
+      ws.startAutoVoting();
+    }
+  }, [pokemon1, pokemon2, ws, userVoted]);
+
   // Show winner banner when there's a clear winner (only if not dismissed)
   useEffect(() => {
-    if (userVoted && totalVotes > 0 && !bannerDismissed) {
-      const winnerInfo = getWinnerInfo();
-      if (winnerInfo?.winner && winnerInfo.winner !== 'tie') {
-        setTimeout(() => {
-          setShowWinnerBanner(true);
-        }, 1500); // Show banner after vote animation completes
-      }
-    }
-  }, [userVoted, votes, totalVotes, bannerDismissed]); // Added bannerDismissed dependency
+    // 🔧 REMOVED: Don't automatically show winner banner based on votingLocked
+    // Winner banner will be triggered manually after countdown finishes
+  }, []);
 
   /**
    * Load Pokémon data from the API
@@ -51,41 +57,24 @@ function BattleArena() {
       const pokemonData = await pokemonAPI.fetchBothPokemon(p1, p2);
       dispatch({ type: ACTIONS.SET_POKEMON, payload: pokemonData });
       
-      // Reset votes for new battle (FIXED ORDER)
-      dispatch({ type: ACTIONS.UNLOCK_VOTING }); // ✅ Unlock first!
-      dispatch({ type: ACTIONS.SET_VOTES, payload: { pokemon1: 0, pokemon2: 0 } }); // ✅ Now works!
+      // 🔧 FIXED: Reset votes to 0 so auto-voting can start from 0 and gradually increase
+      dispatch({ type: ACTIONS.UNLOCK_VOTING });
+      dispatch({ type: ACTIONS.SET_VOTES, payload: { pokemon1: 0, pokemon2: 0 } });
       dispatch({ type: ACTIONS.SET_USER_VOTED, payload: null });
       
-      // 🆕 NEW: Generate initial random votes for new battles
-      setTimeout(() => {
-        const initialVotes = {
-          pokemon1: Math.floor(Math.random() * 30) + 10, // 10-39 votes
-          pokemon2: Math.floor(Math.random() * 30) + 10  // 10-39 votes
-        };
-        dispatch({ type: ACTIONS.SET_VOTES, payload: initialVotes });
-        
-        // Start gradual vote increases to simulate ongoing voting
-        let voteCount = 0;
-        const voteInterval = setInterval(() => {
-          if (voteCount >= 5) { // Stop after 5 updates
-            clearInterval(voteInterval);
-            return;
-          }
-          
-          const newVotes = {
-            pokemon1: initialVotes.pokemon1 + Math.floor(Math.random() * 3) + voteCount * 2,
-            pokemon2: initialVotes.pokemon2 + Math.floor(Math.random() * 3) + voteCount * 2
-          };
-          dispatch({ type: ACTIONS.SET_VOTES, payload: newVotes });
-          voteCount++;
-        }, 2000); // Update every 2 seconds
-        
-      }, 1000); // Start after 1 second
+      // Close existing WebSocket for clean restart
+      if (ws && ws.close) {
+        ws.close();
+      }
       
       // Hide winner banner for new battle
       setShowWinnerBanner(false);
       setBannerExiting(false);
-      setBannerDismissed(false); // Reset banner dismissed state for new battle
+      setBannerDismissed(false);
+      
+      // 🔧 NEW: Reset countdown banner
+      setShowCountdown(false);
+      setCountdown(5); // 🔧 FIXED: Reset to 5 seconds
     } catch (err) {
       dispatch({ type: ACTIONS.SET_ERROR, payload: err.message });
     }
@@ -110,12 +99,46 @@ function BattleArena() {
     // Mark user as voted immediately for instant feedback
     dispatch({ type: ACTIONS.SET_USER_VOTED, payload: pokemonChoice });
 
-    // Send vote through WebSocket
+    // 🔧 FIXED: Start 5-second countdown banner after 0.6 seconds
+    setTimeout(() => {
+      setShowCountdown(true);
+      setCountdown(5); // Start with 5 seconds
+      
+      // Countdown from 5 to 1
+      let currentCount = 5;
+      const countdownInterval = setInterval(() => {
+        currentCount--;
+        setCountdown(currentCount);
+        
+        if (currentCount <= 0) {
+          clearInterval(countdownInterval);
+          setShowCountdown(false);
+          
+          // 🔧 FIXED: When countdown finishes, stop votes first
+          if (ws && ws.lockVoting) {
+            ws.lockVoting();
+          }
+          
+          // 🔧 FIXED: Wait 0.3 seconds AFTER countdown finishes, then show winner
+          setTimeout(() => {
+            console.log('🏆 Attempting to show winner banner');
+            console.log('userVoted:', userVoted, 'totalVotes:', totalVotes, 'bannerDismissed:', bannerDismissed);
+            
+            // Force show winner banner regardless of conditions for debugging
+            setShowWinnerBanner(true);
+            
+          }, 300); // 0.3 seconds after countdown finishes
+        }
+      }, 1000); // Update every second
+      
+    }, 600); // Start countdown 0.6 seconds after vote
+
+    // Send vote through WebSocket (just adds the vote, no automatic timeout)
     const voteData = {
       type: 'vote',
       pokemon: pokemonChoice,
       timestamp: new Date().toISOString(),
-      userId: generateUserId() // In a real app, this would be from authentication
+      userId: generateUserId()
     };
 
     try {
@@ -124,6 +147,7 @@ function BattleArena() {
       console.error('Failed to send vote:', error);
       // Revert the vote if WebSocket fails
       dispatch({ type: ACTIONS.SET_USER_VOTED, payload: null });
+      setShowCountdown(false);
     }
   };
 
@@ -170,7 +194,7 @@ function BattleArena() {
    */
   const closeBanner = () => {
     setBannerExiting(true);
-    setBannerDismissed(true); // Mark banner as dismissed
+    setBannerDismissed(true);
     setTimeout(() => {
       setShowWinnerBanner(false);
       setBannerExiting(false);
@@ -201,16 +225,31 @@ function BattleArena() {
       <div className="absolute inset-0 bg-white/20 backdrop-blur-sm"></div>
       
       {/* Winner Banner */}
-      {showWinnerBanner && winnerInfo?.winner && winnerInfo.winner !== 'tie' && (
+      {showWinnerBanner && winnerInfo?.winner && (
         <div className="winner-banner-container">
           <div className={`winner-banner-content p-4 ${bannerExiting ? 'winner-banner-exit' : 'winner-banner'}`}>
             <div className="text-center">
-              <h2 className="text-2xl md:text-3xl font-bold text-black retro-text">
-                🏆 {winnerInfo.name?.charAt(0).toUpperCase() + winnerInfo.name?.slice(1)} WINS! 🏆
-              </h2>
-              <p className="text-lg text-black/80 retro-text mt-1">
-                With {winnerInfo.winner === 'pokemon1' ? votes.pokemon1 : votes.pokemon2} votes!
-              </p>
+              {winnerInfo.winner === 'tie' ? (
+                // 🔧 FIXED: Special text for ties
+                <>
+                  <h2 className="text-2xl md:text-3xl font-bold text-black retro-text">
+                    🤝 IT'S A TIE! 🤝
+                  </h2>
+                  <p className="text-lg text-black/80 retro-text mt-1">
+                    Both Pokémon are equally amazing with {votes.pokemon1} votes each!
+                  </p>
+                </>
+              ) : (
+                // Original winner text
+                <>
+                  <h2 className="text-2xl md:text-3xl font-bold text-black retro-text">
+                    🏆 {winnerInfo.name?.charAt(0).toUpperCase() + winnerInfo.name?.slice(1)} WINS! 🏆
+                  </h2>
+                  <p className="text-lg text-black/80 retro-text mt-1">
+                    With {winnerInfo.winner === 'pokemon1' ? votes.pokemon1 : votes.pokemon2} votes!
+                  </p>
+                </>
+              )}
             </div>
             
             {/* Close Button */}
@@ -293,6 +332,7 @@ function BattleArena() {
                 userVoted={userVoted}
                 votes={votes.pokemon1}
                 totalVotes={totalVotes}
+                votingLocked={state.votingLocked} // 🔧 NEW: Pass voting lock status
               />
             )}
             
@@ -304,13 +344,24 @@ function BattleArena() {
                 userVoted={userVoted}
                 votes={votes.pokemon2}
                 totalVotes={totalVotes}
+                votingLocked={state.votingLocked} // 🔧 NEW: Pass voting lock status
               />
             )}
           </div>
-
-          {/* Call to Action - REMOVED */}
         </div>
       </div>
+      
+      {/* 🔧 NEW: Countdown Banner - CENTERED ON SCREEN */}
+      {showCountdown && (
+        <div className="fixed inset-0 flex items-center justify-center z-40 pointer-events-none">
+          <div className="bg-black/70 backdrop-blur-md rounded-xl px-8 py-4 border-2 border-white/30 shadow-2xl">
+            <div className="flex items-center gap-3 text-white font-bold text-2xl retro-text">
+              <span>Votes close in</span>
+              <span className="text-red-400 text-3xl animate-pulse">{countdown}</span>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
